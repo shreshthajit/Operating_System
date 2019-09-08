@@ -33,7 +33,7 @@ public class Message_from_client extends javax.swing.JFrame  {
  
     
     @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+   
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
@@ -45,7 +45,7 @@ public class Message_from_client extends javax.swing.JFrame  {
         chatArea = new javax.swing.JTextArea();
         status = new javax.swing.JLabel();
 
-        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/bg7.jpg"))); // NOI18N
+        jLabel1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/bg7.jpg"))); 
 
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("Write your text here");
@@ -96,19 +96,19 @@ public class Message_from_client extends javax.swing.JFrame  {
 
         setSize(new java.awt.Dimension(414, 428));
         setLocationRelativeTo(null);
-    }// </editor-fold>//GEN-END:initComponents
+    }
 
-    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jTextField1ActionPerformed
+    private void jTextField1ActionPerformed(java.awt.event.ActionEvent evt) {
 
         sendMessage(jTextField1.getText());
 	jTextField1.setText("");
-    }//GEN-LAST:event_jTextField1ActionPerformed
+    }
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {
 
        sendMessage(jTextField1.getText());
 	jTextField1.setText("");
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }
 
     
     public void startRunning()
@@ -169,7 +169,7 @@ public class Message_from_client extends javax.swing.JFrame  {
     }
   
     
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+   
     private javax.swing.JTextArea chatArea;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
@@ -178,7 +178,7 @@ public class Message_from_client extends javax.swing.JFrame  {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField jTextField1;
     private javax.swing.JLabel status;
-    // End of variables declaration//GEN-END:variables
+
 
      
 }
