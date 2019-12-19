@@ -1,0 +1,464 @@
+﻿ package UDP;
+
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
+import java.net.SocketException;
+import java.util.Scanner;
+
+public class Server {
+    public static void main(String[] args) throws SocketException {
+
+
+            DatagramSocket socket = new DatagramSocket(8877);
+
+            while (true){
+                try {
+                byte buf1[] = new byte[3000];
+                DatagramPacket packet1 = new DatagramPacket(buf1, buf1.length);
+                socket.receive(packet1);
+
+                System.out.println("Client: "+Client.data(buf1));
+
+                InetAddress ip = packet1.getAddress();
+                int port = packet1.getPort();
+                byte[] buff = null;
+                Scanner input = new Scanner(System.in);
+                String msg2 = input.nextLine();
+                buff = msg2.getBytes();
+                DatagramPacket packet2 = new DatagramPacket(buff, buff.length, ip, port);
+
+                socket.send(packet2);
+            } catch (SocketException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            }
+
+
+    }
+
+}
+
+
+
+
+package UDP;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.*;
+import java.util.Scanner;
+
+public class Client {
+
+    public static void main(String[] args) throws SocketException {
+        DatagramSocket socket = new DatagramSocket();
+
+        while(true){
+            try {
+
+                byte buf1[] = null;
+
+                Scanner input = new Scanner(System.in);
+                String msg = input.nextLine();
+                buf1 = msg.getBytes();
+
+                DatagramPacket packet = new DatagramPacket(buf1, buf1.length, InetAddress.getLocalHost(),8877);
+                socket.send(packet);
+
+                byte buf2[] = new byte[3000];
+                DatagramPacket packet2 = new DatagramPacket(buf2,buf2.length);
+                socket.receive(packet2);
+
+                System.out.println("Server: "+ data(buf2));
+
+            } catch (SocketException e) {
+                e.printStackTrace();
+            } catch (UnknownHostException e) {
+                e.printStackTrace();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+
+    }
+
+    public static StringBuilder data(byte[] a){
+        if(a == null)
+            return  null;
+        StringBuilder msg = new StringBuilder();
+        int i=0;
+        while(a[i] != 0)
+        {
+            msg.append( (char)a[i]);
+            i++;
+        }
+        return msg;
+    }
+}
+--------------------------------------------------------------------------
+
+
+package TCP;
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
+import java.net.Socket;
+
+public class Client extends Thread{
+
+
+    @Override
+    public void run(){
+        try {
+            while (true){
+                Socket client = new Socket("localhost", 8877);
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+                String input = br.readLine();
+                PrintWriter out = new PrintWriter(client.getOutputStream(), true);
+                out.println(input);
+
+                BufferedReader brr = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                String msg = brr.readLine();
+                System.out.println("Server: "+msg);
+            }
+
+
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+
+package TCP;
+
+import java.util.Scanner;
+
+public class Driver {
+
+    public static void main(String[] args) {
+
+        Client c = new Client();
+        c.start();
+        try {
+            c.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
+    }
+}
+
+----------------------------------------------------------------
+package TCP;
+
+import java.io.*;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+public class Server {
+
+    public static void main(String[] args) {
+        System.out.println("Wating for client...");
+        try {
+            ServerSocket server = new ServerSocket(8877);
+            Socket client;
+            while ( (client = server.accept()) != null){
+
+                BufferedReader br = new BufferedReader(new InputStreamReader(client.getInputStream()));
+                String msg = br.readLine();
+                System.out.println("Client: "+msg);
+
+                BufferedReader brr = new BufferedReader(new InputStreamReader(System.in));
+                String msg2 = brr.readLine();
+                PrintWriter send = new PrintWriter(client.getOutputStream(), true);
+                send.println(msg2);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
+
+
+
+
+------------------------------------------------------------------
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package dinning_philosopers;
+ 
+//public class Dinning_philosopers {
+ import java.util.concurrent.Semaphore;
+import java.util.Random;
+
+
+public class Dinning_philosopers extends Thread
+{
+    private static final Random rand = new Random();
+    private static int event=0;
+    final static int N = 5; // five philosophers, five forks
+    public static Semaphore[] fork = new Semaphore[N];
+    private int oneOnTop = N;
+ 
+    private int id;                  
+    private Semaphore myFork;        // Resource locks
+    private Semaphore myNeighborsFork;
+    private int meals = 10;          // Max meals
+
+    private Dinning_philosopers(int me, Semaphore fork, Semaphore fork0) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+ 
+    //Constructor: an ID# and two shared resources
+    public Philosopher(int i, Semaphore fork1, Semaphore fork2)
+    {
+        id = i;
+        myFork = fork1;
+        myNeighborsFork = fork2;
+    }
+ 
+    private void postMsg(String str) {
+        System.out.printf("%d %d. Chopsitcks left: %d. Philosopher     %d %s\n",
+                System.currentTimeMillis(), ++event, getTopOne(), id, str);
+    }
+ 
+    //Pause - waits a bit (random fraction of a second)
+     
+    private void pause()
+    {
+        try
+        {
+            sleep(rand.nextInt(4000));
+        } catch (InterruptedException e){}
+    }
+ 
+    
+     //Tell philosopher to think - he waits a bit
+     
+    private void think()
+    {
+        postMsg("is thinking");
+        pause();
+    }
+    
+    private synchronized void takeOne()
+    {
+        oneOnTop--;
+    }
+    
+    private synchronized void putBack()
+    {
+        oneOnTop++;
+    }
+    
+    private synchronized int getTopOne()
+    {
+        return oneOnTop;
+    }
+ 
+    /**
+     * Tell philosopher to eat.  Tries to acquire resources (forks)
+     *
+     * Possible modification: Doesn't change a state
+     * (hungry, starving, etc.) if they can't get a fork
+     *
+     * Possible modification: could return a boolean indicating success
+     */
+    private void trytoeat()
+    {
+        if (getTopOne() < 2){
+            postMsg("is waiting for ennough chopsticks to be on the table");
+        } else {
+            postMsg("is hungry and is trying to pick up two chopsticks");
+        }
+        pause();
+        try {
+            // Semaphore - waits on his own fork if necessary
+            takeOne();
+            myFork = fork[getTopOne() - 1];
+            myFork.acquire();
+ 
+            // He's picked up his own fork, now try and grab his neighbor's fork
+            // (does not wait)
+            takeOne();
+            myNeighborsFork = fork[getTopOne() - 1];
+            if (!myNeighborsFork.tryAcquire()) {
+                // Unsuccessful, guess he's fasting today
+                postMsg(">>>> was not able to get a second chopstick");
+                return;
+            };
+ 
+            // Success! begins to eat
+            postMsg("picked up two chopsticks and is eating meal #" + (10 - --meals));
+            pause();
+ 
+            // Now put down the forks
+            postMsg("puts down his chopsticks");
+            putBack();
+            myNeighborsFork.release();
+ 
+        } catch (InterruptedException e) {
+            // In case the thread is interrupted
+            postMsg("was interrupted while waiting for his fork");
+        }
+        finally { // always puts his own fork back down
+            putBack();
+            myFork.release();
+        }
+    }
+ 
+    /**
+     * philosophise until all meals are consumed
+     */
+    @Override
+    public void run()
+    {
+        while (meals > 0)
+        {
+            think();
+            trytoeat();
+        }
+    }
+ 
+    /**
+     *  Main program
+     *  * Create resouces (forks) as semaphores
+     *  * create philosophers
+     *  * start philosophers
+     *  * wait for completion
+     */
+    public static void main(String[] args)
+    {
+        System.out.println("Begin");
+ 
+        //final int N = 5; // five philosophers, five forks
+ 
+        // Create the forks, 1 fork per philosopher
+        //Semaphore[] fork = new Semaphore[N];
+        for (int f = 0; f < N; f++) {
+            // each fork is a single resource
+            fork[f] = new Semaphore(1, true);
+        }
+ 
+        // Create the philosophers, pass in their forks
+        Dinning_philosopers[] philosopher = new Dinning_philosopers[N];
+        for (int me = 0; me < N; me++) {
+            // determine my right-hand neighbor's ID
+            int myneighbor = me + 1;
+            if (myneighbor == N) myneighbor = 0;
+ 
+            // Initialize each philosopher (no pun intended)
+            philosopher[me] = new Dinning_philosopers(me, fork[me], fork[myneighbor]); 
+        }
+ 
+        // Start the philosophers
+        for (int i = 0; i < N; i++) {
+              philosopher[i].start();
+        }
+ 
+        // Wait for them to finish
+        for (int i = 0; i < N; i++) {
+          try {
+            philosopher[i].join();
+          } catch(InterruptedException ex) { }
+        }
+ 
+        // All done
+        System.out.println("Done");
+    }
+}
+
+
+
+ --------------------------------------------------------------
+import java.util.Scanner;
+public class Bankers{
+    private int need[][],allocate[][],max[][],avail[][],np,nr;
+
+    private void input(){
+        Scanner sc=new Scanner(System.in);
+        System.out.print("Enter no. of processes and resources : ");
+        np=sc.nextInt();  //no. of process
+        nr=sc.nextInt();  //no. of resources
+        need=new int[np][nr];  //initializing arrays
+        max=new int[np][nr];
+        allocate=new int[np][nr];
+        avail=new int[1][nr];
+
+        System.out.println("Enter allocation matrix -->");
+        for(int i=0;i<np;i++)
+            for(int j=0;j<nr;j++)
+                allocate[i][j]=sc.nextInt();  //allocation matrix
+
+        System.out.println("Enter max matrix -->");
+        for(int i=0;i<np;i++)
+            for(int j=0;j<nr;j++)
+                max[i][j]=sc.nextInt();  //max matrix
+
+        System.out.println("Enter available matrix -->");
+        for(int j=0;j<nr;j++)
+            avail[0][j]=sc.nextInt();  //available matrix
+
+        sc.close();
+    }
+
+    private int[][] calc_need(){
+        for(int i=0;i<np;i++)
+            for(int j=0;j<nr;j++)  //calculating need matrix
+                need[i][j]=max[i][j]-allocate[i][j];
+
+        return need;
+    }
+
+    private boolean check(int i){
+        //checking if all resources for ith process can be allocated
+        for(int j=0;j<nr;j++)
+            if(avail[0][j]<need[i][j])
+                return false;
+
+        return true;
+    }
+
+    public void isSafe(){
+        input();
+        calc_need();
+        boolean done[]=new boolean[np];
+        int j=0;
+
+        while(j<np){  //until all process allocated
+            boolean allocated=false;
+            for(int i=0;i<np;i++)
+                if(!done[i] && check(i)){  //trying to allocate
+                    for(int k=0;k<nr;k++)
+                        avail[0][k]=avail[0][k]-need[i][k]+max[i][k];
+                    System.out.println("Allocated process : "+i);
+                    allocated=done[i]=true;
+                    j++;
+                }
+            if(!allocated) break;  //if no allocation
+        }
+        if(j==np)  //if all processes are allocated
+            System.out.println("\nSafely allocated");
+        else
+            System.out.println("All proceess cant be allocated safely");
+    }
+
+    public static void main(String[] args) {
+        new Bankers().isSafe();
+    }
+} 
